@@ -7,62 +7,61 @@ repository: https://github.com/matinhas/compass
 deployment: Railway
 stack: Python 3.12 / FastAPI / PostgreSQL / SQLAlchemy 2.0 / Alembic
 
-# ── Roadmap ────────────────────────────────────────────────────────────────────
+current_focus:
+  - Railway first deploy (alembic + uvicorn)
+  - End-to-end capture test (POST /captures → ClickUp Inbox)
+
+completed:
+  - Repository created (github.com/matinhas/compass, branch main)
+  - FastAPI skeleton
+  - PostgreSQL connection (SQLAlchemy 2.0)
+  - Alembic migration scaffold + captures table
+  - GET /health
+  - POST /captures
+  - GET /captures
+  - ClickUp Inbox integration (fire-and-forget)
+  - Railway deployment config
+  - DATABASE_URL linked to Railway PostgreSQL service
+  - Alembic connecting to database
+
+in_progress:
+  - Railway deploy — awaiting migration completion + uvicorn startup
+
+next:
+  - Confirm /health live on Railway URL
+  - Add CLICKUP_API_KEY + CLICKUP_INBOX_LIST_ID to Railway env vars
+  - Test POST /captures → ClickUp Inbox task created
+  - MVP-002: AI classification layer
+
+blocked: []
+
+technical_debt: []
+
+architecture_decisions:
+  - ClickUp is the operational hub — all captures surface there as tasks
+  - PostgreSQL from day one — no SQLite, no shortcuts
+  - ClickUp failure never blocks capture creation (fire-and-forget)
+  - Capture ID is human-readable (CAP-00001) derived from integer PK, not stored in DB
+  - Alembic owns schema — no create_all in app startup
+  - Railway start command runs migrations before uvicorn
 
 roadmap:
   MVP-001:
     name: Capture → ClickUp Inbox
-    goal: POST /capture stores capture and creates ClickUp Inbox task. No AI. No classification. Just capture.
     status: in_progress
-    success_criteria:
-      - POST /captures returns 201 with capture_id
-      - Capture stored in PostgreSQL
-      - ClickUp Inbox task created automatically
 
   MVP-002:
     name: Inbox Classification
-    goal: AI classifies each capture into a type on arrival
     status: planned
-    types: [Task, Project, Decision, Reference, Alert]
 
   MVP-003:
     name: Daily Briefing
-    goal: Automated daily summary — what deserves attention today?
     status: planned
 
   MVP-004:
     name: Attention Engine
-    goal: Ranking and prioritisation across all captures
     status: planned
 
   MVP-005:
     name: Integrations
-    goal: Pull captures from external sources automatically
     status: planned
-    integrations: [Gmail, respond.io, Izibizi, WordPress]
-
-# ── Current State ──────────────────────────────────────────────────────────────
-
-completed:
-  - FastAPI skeleton (app/main.py)
-  - PostgreSQL connection via SQLAlchemy 2.0
-  - Alembic migration scaffold + captures table migration
-  - GET /health endpoint
-  - POST /captures endpoint
-  - GET /captures endpoint
-  - ClickUp Inbox integration (fire-and-forget via httpx)
-  - Railway deployment config (railway.json + Dockerfile)
-  - GitHub repo created (matinhas/compass, branch main)
-  - DATABASE_URL env var linked to Railway PostgreSQL service
-  - Alembic connected to database (migration running)
-
-in_progress:
-  - Railway deployment — verifying first successful deploy
-
-next:
-  - Confirm /health returns 200 on Railway URL
-  - Test POST /captures end-to-end → ClickUp Inbox task appears
-  - Add CLICKUP_API_KEY and CLICKUP_INBOX_LIST_ID to Railway env vars
-  - Begin MVP-002 classification layer
-
-blocked: []
