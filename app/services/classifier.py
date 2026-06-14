@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 from dataclasses import dataclass
 
 from anthropic import AsyncAnthropic
@@ -32,7 +31,7 @@ class ClassificationResult:
 
 class ClassifierService:
     def __init__(self) -> None:
-        self._client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        self._client = AsyncAnthropic()
 
     async def classify(self, content: str) -> ClassificationResult | None:
         try:
