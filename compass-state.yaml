@@ -5,10 +5,11 @@ last_updated: "2026-06-14"
 
 repository: https://github.com/matinhas/compass
 deployment: Railway
+production_url: https://compass-production-2fc4.up.railway.app
 stack: Python 3.12 / FastAPI / PostgreSQL / SQLAlchemy 2.0 / Alembic
 
 current_focus:
-  - MVP-001 validation — confirm first production capture reaches ClickUp Inbox
+  - MVP-001 final validation — POST /captures → PostgreSQL → ClickUp Inbox
 
 completed:
   - Repository created (github.com/matinhas/compass, branch main)
@@ -19,32 +20,34 @@ completed:
   - POST /captures
   - GET /captures
   - ClickUp Inbox integration (fire-and-forget)
-  - Railway deployment config (railway.json + Dockerfile)
+  - Railway deployment config (Procfile + railway.json)
   - DATABASE_URL linked to Railway PostgreSQL service
-  - Alembic connecting to database successfully
+  - "[x] Railway deploy succeeds"
+  - "[x] GET /health returns {status: ok} — confirmed live"
+  - "[x] GET /captures returns [] — database connected"
 
 in_progress:
-  - Railway live deployment (alembic running, uvicorn pending)
-  - CLICKUP_API_KEY + CLICKUP_INBOX_LIST_ID env vars (not yet added to Railway)
+  - Add CLICKUP_API_KEY + CLICKUP_INBOX_LIST_ID to Railway env vars
+  - Test POST /captures end-to-end → ClickUp Inbox task created
 
 next:
-  - MVP-001 validation checklist (see below)
-  - MVP-002: AI Classification Layer
+  - Mark MVP-001 COMPLETE
+  - Begin MVP-002: AI Classification Layer
 
 blocked: []
 
 technical_debt: []
 
-# ── MVP-001 Validation Checklist (must all pass before MVP-001 = COMPLETE) ────
+# ── MVP-001 Validation Checklist ───────────────────────────────────────────────
 
 mvp_001_validation:
-  - [ ] Railway deploy succeeds — no crash on startup
-  - [ ] GET /health returns {"status": "ok"}
-  - [ ] POST /captures stores record in PostgreSQL
-  - [ ] ClickUp Inbox task appears with capture_id in title
-  - [ ] Capture ID (CAP-00001) returned in response
+  - "[x] Railway deploy succeeds"
+  - "[x] GET /health returns {status: ok}"
+  - "[ ] POST /captures stores record in PostgreSQL"
+  - "[ ] ClickUp Inbox task appears with capture_id in title"
+  - "[ ] Capture ID (CAP-00001) returned in response"
 
-# ── MVP-002 Scope (next after MVP-001 is validated) ───────────────────────────
+# ── MVP-002 Scope ──────────────────────────────────────────────────────────────
 
 mvp_002_scope:
   name: AI Classification Layer
@@ -64,7 +67,7 @@ mvp_002_scope:
 roadmap:
   MVP-001:
     name: Capture → ClickUp Inbox
-    status: in_progress  # 90% complete — pending production validation
+    status: in_progress  # 95% — pending ClickUp env vars + end-to-end test
     goal: POST /captures stores capture and creates ClickUp Inbox task. No AI. No classification. Just capture.
 
   MVP-002:
@@ -95,7 +98,7 @@ architecture_decisions:
   - ClickUp failure never blocks capture creation (fire-and-forget)
   - Capture ID is human-readable (CAP-00001) derived from integer PK, not stored in DB
   - Alembic owns schema — no create_all in app startup
-  - Railway start command runs migrations before uvicorn
+  - Procfile is the Railway start command (Dockerfile removed — caused PORT conflict)
   - compass-state.yaml is development truth; ClickUp is operational truth. If they disagree, developers follow compass-state.yaml and management follows ClickUp. Periodic sync keeps them aligned.
 
 # ── Operating Rule ─────────────────────────────────────────────────────────────
