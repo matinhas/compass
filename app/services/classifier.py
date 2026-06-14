@@ -1,8 +1,11 @@
 import json
+import logging
 import os
 from dataclasses import dataclass
 
 from anthropic import AsyncAnthropic
+
+logger = logging.getLogger(__name__)
 
 _PROMPT = """Classify the following capture into structured categories. Respond with a JSON object only — no markdown, no explanation.
 
@@ -47,5 +50,6 @@ class ClassifierService:
                 confidence=int(data["confidence"]),
                 reasoning=data["reasoning"],
             )
-        except Exception:
+        except Exception as e:
+            logger.error("Classification failed: %s: %s", type(e).__name__, e)
             return None
