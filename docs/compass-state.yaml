@@ -44,6 +44,7 @@ architecture_decisions:
   - Capture ID is human-readable (CAP-00001) derived from integer PK, not stored in DB
   - Alembic owns schema — no create_all in app startup
   - Railway start command runs migrations before uvicorn
+  - compass-state.yaml is development truth; ClickUp is operational truth. If they disagree, developers follow compass-state.yaml and management follows ClickUp. Periodic sync keeps them aligned.
 
 roadmap:
   MVP-001:
