@@ -1,29 +1,38 @@
 # Compass — Next Actions
 
-## Immediate (before v0.1 is live)
+## Now: Finish MVP-001 Deploy
 
-- [ ] Copy `.env.example` → `.env` and fill in real values
-- [ ] Push to GitHub: `git push origin master`
-- [ ] Create Railway project linked to `github.com/matinhas/compass`
-- [ ] Add PostgreSQL service in Railway
-- [ ] Set Railway env vars: `DATABASE_URL`, `CLICKUP_API_KEY`, `CLICKUP_INBOX_LIST_ID`
-- [ ] Verify Railway deploy succeeds and `/health` returns `{"status": "ok"}`
-- [ ] Test `POST /captures` end-to-end and confirm ClickUp task appears in Inbox
+- [ ] Confirm Railway deploy succeeds — `GET /health` returns `{"status": "ok"}`
+- [ ] Add `CLICKUP_API_KEY` to Railway env vars (compass service → Variables)
+- [ ] Add `CLICKUP_INBOX_LIST_ID` to Railway env vars
+- [ ] Test end-to-end: `POST /captures` → capture stored → ClickUp Inbox task appears
+- [ ] MVP-001 complete ✓
 
-## v0.2 — AI Classification
+---
 
-- [ ] Add `category`, `urgency`, `tags` columns to captures table (new Alembic migration)
+## MVP-002 — Inbox Classification
+
+- [ ] Add `category`, `urgency`, `tags` columns to captures (new Alembic migration)
 - [ ] Create `app/services/classifier.py` — calls Claude API to classify capture content
-- [ ] Run classifier async after capture is stored (non-blocking)
-- [ ] Expose classification in `GET /captures` response
+- [ ] Run classifier async after capture is stored (non-blocking, like ClickUp)
+- [ ] Classification types: Task, Project, Decision, Reference, Alert
+- [ ] Expose classification fields in `GET /captures` response
 
-## v0.3 — Daily Briefing
+## MVP-003 — Daily Briefing
 
-- [ ] Add scheduled job (Railway cron or APScheduler) to generate daily summary
+- [ ] Add scheduled job (Railway cron or APScheduler) — runs once daily
 - [ ] Summarise all UNPROCESSED captures from last 24h
-- [ ] Send briefing to configured channel (ClickUp task / email / webhook)
+- [ ] Send briefing to configured output (ClickUp task / email / webhook)
 
-## v0.4 — Compass Self-Reports
+## MVP-004 — Attention Engine
 
-- [ ] Hook git commits to update ClickUp task status via `TASK-XXX` in commit message
-- [ ] Auto-update `docs/compass-state.yaml` on each build milestone
+- [ ] Score each capture by urgency, recency, source weight
+- [ ] `GET /captures?ranked=true` returns prioritised list
+- [ ] Surface top 3 items needing attention
+
+## MVP-005 — Integrations
+
+- [ ] Gmail — watch inbox, create captures from flagged emails
+- [ ] respond.io — create captures from flagged conversations
+- [ ] Izibizi — accounting alerts → captures
+- [ ] WordPress — comments / contact form → captures

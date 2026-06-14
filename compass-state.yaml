@@ -66,3 +66,10 @@ next:
   - Begin MVP-002 classification layer
 
 blocked: []
+
+# ── Operating Rule ─────────────────────────────────────────────────────────────
+# After every meaningful coding session:
+#   1. Update this file
+#   2. Update docs/build-log.md
+#   3. git commit && git push
+# Paste this file to ChatGPT to sync architecture decisions and next steps.
