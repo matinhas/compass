@@ -2,7 +2,10 @@ from sqlalchemy.orm import Session
 
 from app.models.capture import Capture
 from app.schemas.capture import CaptureCreate
+from app.services.classifier import ClassifierService
 from app.services.clickup import create_inbox_task
+
+_classifier = ClassifierService()
 
 
 async def create_capture(db: Session, data: CaptureCreate) -> Capture:
@@ -12,7 +15,20 @@ async def create_capture(db: Session, data: CaptureCreate) -> Capture:
     db.refresh(capture)
 
     try:
-        clickup_task_id = await create_inbox_task(capture.capture_id, capture.content)
+        result = await _classifier.classify(capture.content)
+        if result:
+            capture.classification_type = result.type
+            capture.classification_domain = result.domain
+            capture.classification_priority = result.priority
+            capture.classification_confidence = result.confidence
+            capture.classification_reasoning = result.reasoning
+            db.commit()
+            db.refresh(capture)
+    except Exception:
+        pass  # Classification failure must not block capture creation
+
+    try:
+        clickup_task_id = await create_inbox_task(capture)
         if clickup_task_id:
             capture.clickup_task_id = clickup_task_id
             db.commit()

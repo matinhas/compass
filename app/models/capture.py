@@ -20,6 +20,12 @@ class Capture(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     clickup_task_id = Column(String, nullable=True)
 
+    classification_type = Column(String, nullable=True)
+    classification_domain = Column(String, nullable=True)
+    classification_priority = Column(String, nullable=True)
+    classification_confidence = Column(Integer, nullable=True)
+    classification_reasoning = Column(Text, nullable=True)
+
     @property
     def capture_id(self) -> str:
         return f"CAP-{self.id:05d}"

@@ -21,4 +21,10 @@ class CaptureResponse(BaseModel):
     created_at: datetime
     clickup_task_id: str | None = None
 
+    classification_type: str | None = None
+    classification_domain: str | None = None
+    classification_priority: str | None = None
+    classification_confidence: int | None = None
+    classification_reasoning: str | None = None
+
     model_config = {"from_attributes": True}

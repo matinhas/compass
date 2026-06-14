@@ -1,6 +1,6 @@
 project: Compass
 version: "0.1"
-phase: MVP-002
+phase: MVP-003
 last_updated: "2026-06-14"
 
 repository: https://github.com/matinhas/compass
@@ -9,7 +9,7 @@ production_url: https://compass-production-2fc4.up.railway.app
 stack: Python 3.12 / FastAPI / PostgreSQL / SQLAlchemy 2.0 / Alembic
 
 current_focus:
-  - MVP-002: AI Classification Layer
+  - MVP-003: Daily Briefing
 
 completed:
   - Repository created (github.com/matinhas/compass, branch main)
@@ -23,13 +23,14 @@ completed:
   - Railway deployment (Procfile + railway.json)
   - DATABASE_URL + CLICKUP_API_KEY + CLICKUP_INBOX_LIST_ID configured
   - "[x] MVP-001 COMPLETE — first production capture CAP-00001 stored + ClickUp task 869dpfj88 created"
+  - "[x] MVP-002 COMPLETE — AI classification layer (type/domain/priority/confidence/reasoning) via claude-opus-4-8"
 
 in_progress: []
 
 next:
-  - MVP-002: add category, urgency, tags columns (Alembic migration)
-  - MVP-002: create app/services/classifier.py (Claude API)
-  - MVP-002: run classification async after capture stored
+  - Add ANTHROPIC_API_KEY to Railway env vars
+  - Verify classification fields appear in POST /captures response
+  - MVP-003: Daily Briefing (scheduled job)
 
 blocked: []
 
@@ -68,7 +69,7 @@ roadmap:
 
   MVP-002:
     name: AI Classification
-    status: in_progress
+    status: complete
     goal: Classify each capture — type, domain, priority, confidence. No automation yet.
 
   MVP-003:
