@@ -1,0 +1,40 @@
+project: Compass
+version: "0.1"
+last_updated: "2026-06-14"
+
+stack:
+  language: Python 3.12
+  framework: FastAPI
+  database: PostgreSQL
+  orm: SQLAlchemy 2.0
+  migrations: Alembic
+  deployment: Railway
+  repository: https://github.com/matinhas/compass
+
+completed:
+  - FastAPI skeleton
+  - PostgreSQL connection (SQLAlchemy 2.0)
+  - Alembic migration scaffold
+  - GET /health
+  - POST /captures (store + ClickUp Inbox task)
+  - GET /captures
+  - ClickUp integration (fire-and-forget)
+  - Railway deploy config (railway.json + Dockerfile)
+  - Initial commit to GitHub
+
+in_progress:
+  - Railway deployment (waiting on env vars + service setup)
+
+next:
+  - Push to GitHub and deploy to Railway
+  - Verify end-to-end: POST /captures → ClickUp Inbox
+  - AI classification layer (v0.2)
+  - Daily Briefing engine (v0.3)
+
+blocked: []
+
+decisions:
+  - ClickUp failure never blocks capture creation
+  - capture_id is CAP-{id:05d} — human-readable, not stored in DB
+  - Alembic owns schema — no create_all in app startup
+  - Railway start: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
