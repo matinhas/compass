@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "compass": {
-      "url": "https://compass-production-2fc4.up.railway.app/mcp/sse"
+      "url": "https://compass-production-2fc4.up.railway.app/mcp/mcp"
     },
     "respond-io": {
       "command": "npx",
