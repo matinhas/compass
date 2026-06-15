@@ -18,6 +18,8 @@ async def _classify_and_persist(db: Session, capture: Capture) -> None:
             capture.classification_priority = result.priority
             capture.classification_confidence = result.confidence
             capture.classification_reasoning = result.reasoning
+            capture.attention_required = result.attention_required
+            capture.attention_reason = result.attention_reason
             db.commit()
             db.refresh(capture)
     except Exception:

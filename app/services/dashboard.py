@@ -32,7 +32,7 @@ def generate_dashboard(db: Session) -> DashboardResponse:
     now = datetime.now(timezone.utc)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
 
-    captures = db.query(Capture).all()
+    captures = db.query(Capture).filter(Capture.attention_required == True).all()  # noqa: E712
 
     critical_count = 0
     high_count = 0

@@ -1,7 +1,7 @@
 project: Compass
 version: "0.1"
 phase: MVP-006
-last_updated: "2026-06-15"  # session 8
+last_updated: "2026-06-15"  # session 9
 
 repository: https://github.com/matinhas/compass
 deployment: Railway
@@ -37,6 +37,7 @@ completed:
 
 in_progress:
   - MVP-006: Executive Dashboard — COMPLETE. Signed off with roadmap_progress + system_health + current_focus + active_commitments + completed_milestones
+  - "[x] Attention Filtering — attention_required + attention_reason added to classifier output, Alembic migration 004, attention engine + dashboard filter to attention_required=True only"
 
 next:
   - Push to Railway, validate GET /dashboard returns roadmap_progress + system_health in production
@@ -181,6 +182,7 @@ architecture_decisions:
   - Dashboard exposes current_focus/active_commitments/completed_milestones/roadmap_progress/system_health derived from compass-state.yaml + system_status service (no DB duplication)
   - Single ClickUp list for all task types (roadmap + commitments + operational); CLICKUP_COMMITMENTS_LIST_ID intentionally equals CLICKUP_ROADMAP_LIST_ID
   - system_health logic lives in app/services/system_status.py; both MCP get_system_status() tool and dashboard service call it (no duplication)
+  - Attention filtering: classifier returns attention_required (bool) + attention_reason (str|null); attention engine and dashboard both filter to attention_required=True; NULL rows (pre-migration captures) are excluded
 
 # ── Operating Rule ─────────────────────────────────────────────────────────────
 # After every meaningful coding session:

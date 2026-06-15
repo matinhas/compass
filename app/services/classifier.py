@@ -16,6 +16,8 @@ Required JSON fields:
 - priority: one of Critical, High, Normal, Low
 - confidence: integer 0-100 indicating how confident you are in this classification
 - reasoning: one sentence explaining the classification
+- attention_required: boolean — true if this requires human action or decision (e.g. customer complaint, approval request, supplier decision, accountant request, legal issue, operational risk); false if informational only (e.g. newsletter, promotion, receipt, system notification, marketing email)
+- attention_reason: one sentence explaining why attention is required, or null if attention_required is false
 
 Respond with only the JSON object."""
 
@@ -27,6 +29,8 @@ class ClassificationResult:
     priority: str
     confidence: int
     reasoning: str
+    attention_required: bool
+    attention_reason: str | None
 
 
 class ClassifierService:
@@ -48,6 +52,8 @@ class ClassifierService:
                 priority=data["priority"],
                 confidence=int(data["confidence"]),
                 reasoning=data["reasoning"],
+                attention_required=bool(data.get("attention_required", False)),
+                attention_reason=data.get("attention_reason") or None,
             )
         except Exception as e:
             logger.error("Classification failed: %s: %s", type(e).__name__, e)

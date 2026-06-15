@@ -48,7 +48,7 @@ def _score(capture: Capture, now: datetime) -> tuple[float, ScoreBreakdown]:
 
 
 def generate_attention_ranking(db: Session) -> AttentionResponse:
-    captures = db.query(Capture).all()
+    captures = db.query(Capture).filter(Capture.attention_required == True).all()  # noqa: E712
     now = datetime.now(timezone.utc)
 
     items: list[AttentionItem] = []

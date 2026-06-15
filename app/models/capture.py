@@ -1,6 +1,6 @@
 import enum
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Text, DateTime, Enum
+from sqlalchemy import Boolean, Column, Integer, String, Text, DateTime, Enum
 
 from app.database.db import Base
 
@@ -29,6 +29,9 @@ class Capture(Base):
     source_type = Column(String, nullable=True)
     source_instance = Column(String, nullable=True)
     external_id = Column(String, nullable=True)
+
+    attention_required = Column(Boolean, nullable=True)
+    attention_reason = Column(Text, nullable=True)
 
     @property
     def capture_id(self) -> str:

@@ -2,6 +2,32 @@
 
 ---
 
+## 2026-06-15 — Session 9: Attention Filtering
+
+### Completed
+
+**Attention Filtering — classification + engine + dashboard**
+
+- `alembic/versions/004_add_attention_fields.py` — migration adds `attention_required` (Boolean) and `attention_reason` (Text) to captures table
+- `app/models/capture.py` — two new columns added
+- `app/services/classifier.py` — prompt extended: AI now returns `attention_required` bool and `attention_reason` string alongside existing fields; `ClassificationResult` updated; safe fallback on missing key
+- `app/services/capture_service.py` — persists `attention_required` + `attention_reason` from classification result
+- `app/services/attention.py` — `generate_attention_ranking` now queries `attention_required = True` only
+- `app/services/dashboard.py` — all dashboard counts (critical, high, captures_today, source/domain breakdown, top_attention) now filter to `attention_required = True` only
+
+### Behaviour
+- `attention_required = true`: customer complaints, approval requests, supplier decisions, accountant requests, legal issues, operational risk
+- `attention_required = false`: newsletters, promotions, receipts, system notifications, marketing emails
+- Pre-migration captures (NULL) are excluded from filtered views — conservative default
+- Running the migration on Railway via `alembic upgrade head` on next deploy
+
+### Next Session Should Start With
+1. Validate in production: new captures classified with attention_required field
+2. Check dashboard counts drop to reflect actionable items only
+3. MVP-005.3: Izibizi integration
+
+---
+
 ## 2026-06-15 — Session 8: MVP-006 Layer Complete — MCP + ClickUp Mirror + Dashboard
 
 ### Completed
