@@ -4,16 +4,12 @@ from app.models.capture import Capture
 from app.schemas.capture import CaptureCreate
 from app.services.classifier import ClassifierService
 from app.services.clickup import create_inbox_task
+from app.sources.models import NormalizedCapture
 
 _classifier = ClassifierService()
 
 
-async def create_capture(db: Session, data: CaptureCreate) -> Capture:
-    capture = Capture(source=data.source, content=data.content)
-    db.add(capture)
-    db.commit()
-    db.refresh(capture)
-
+async def _classify_and_persist(db: Session, capture: Capture) -> None:
     try:
         result = await _classifier.classify(capture.content)
         if result:
@@ -25,8 +21,10 @@ async def create_capture(db: Session, data: CaptureCreate) -> Capture:
             db.commit()
             db.refresh(capture)
     except Exception:
-        pass  # Classification failure must not block capture creation
+        pass
 
+
+async def _clickup_and_persist(db: Session, capture: Capture) -> None:
     try:
         clickup_task_id = await create_inbox_task(capture)
         if clickup_task_id:
@@ -34,8 +32,45 @@ async def create_capture(db: Session, data: CaptureCreate) -> Capture:
             db.commit()
             db.refresh(capture)
     except Exception:
-        pass  # ClickUp failure must not block capture creation
+        pass
 
+
+async def create_capture(db: Session, data: CaptureCreate) -> Capture:
+    capture = Capture(
+        source=data.source,
+        content=data.content,
+        source_type="manual",
+        source_instance="compass",
+    )
+    db.add(capture)
+    db.commit()
+    db.refresh(capture)
+    await _classify_and_persist(db, capture)
+    await _clickup_and_persist(db, capture)
+    return capture
+
+
+async def create_capture_from_source(db: Session, nc: NormalizedCapture) -> Capture | None:
+    if nc.external_id:
+        existing = db.query(Capture).filter(Capture.external_id == nc.external_id).first()
+        if existing:
+            return None
+
+    created_at = nc.created_at.replace(tzinfo=None) if nc.created_at.tzinfo else nc.created_at
+
+    capture = Capture(
+        source=nc.source_type,
+        content=nc.content,
+        source_type=nc.source_type,
+        source_instance=nc.source_instance,
+        external_id=nc.external_id,
+        created_at=created_at,
+    )
+    db.add(capture)
+    db.commit()
+    db.refresh(capture)
+    await _classify_and_persist(db, capture)
+    await _clickup_and_persist(db, capture)
     return capture
 
 

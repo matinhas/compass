@@ -26,6 +26,10 @@ class Capture(Base):
     classification_confidence = Column(Integer, nullable=True)
     classification_reasoning = Column(Text, nullable=True)
 
+    source_type = Column(String, nullable=True)
+    source_instance = Column(String, nullable=True)
+    external_id = Column(String, nullable=True)
+
     @property
     def capture_id(self) -> str:
         return f"CAP-{self.id:05d}"

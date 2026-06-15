@@ -27,4 +27,8 @@ class CaptureResponse(BaseModel):
     classification_confidence: int | None = None
     classification_reasoning: str | None = None
 
+    source_type: str | None = None
+    source_instance: str | None = None
+    external_id: str | None = None
+
     model_config = {"from_attributes": True}
