@@ -68,6 +68,8 @@ async def test_imported_email_classified():
         priority="Critical",
         confidence=95,
         reasoning="Overdue invoice requires immediate financial attention.",
+        attention_required=True,
+        attention_reason="Overdue invoice requires immediate action.",
     )
 
     with patch("app.services.capture_service._classifier") as mock_clf, \
