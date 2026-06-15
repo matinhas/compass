@@ -1,7 +1,7 @@
 project: Compass
 version: "0.1"
 phase: MVP-006
-last_updated: "2026-06-15"  # session 6
+last_updated: "2026-06-15"  # session 8
 
 repository: https://github.com/matinhas/compass
 deployment: Railway
@@ -9,7 +9,7 @@ production_url: https://compass-production-2fc4.up.railway.app
 stack: Python 3.12 / FastAPI / PostgreSQL / SQLAlchemy 2.0 / Alembic
 
 current_focus:
-  - MVP-006.3: ClickUp Operational Mirror
+  - MVP-006: Executive Dashboard
 
 completed:
   - Repository created (github.com/matinhas/compass, branch main)
@@ -31,14 +31,18 @@ completed:
   - "[x] MVP-006.1 COMPLETE — Roadmap Synchronization: POST /sync/roadmap, compass-state.yaml → ClickUp, prefix-key matching, idempotent, 12 tasks live"
   - "[x] MVP-006 COMPLETE — GET /dashboard: critical/high counts, captures_today, source_breakdown, domain_breakdown, top_attention"
   - "[x] MVP-006.2 IN PROGRESS — Compass MCP Server: FastMCP, 6 tools (dashboard/briefing/attention/roadmap/commitments/sync_roadmap), mounted at /mcp SSE"
-  - "[x] MVP-006.3 IN PROGRESS — ClickUp Operational Mirror: sync_focus, sync_status_summary, completion comments, dashboard extended (current_focus/active_commitments/completed_milestones)"
+  - "[x] MVP-006.3 COMPLETE — ClickUp Operational Mirror: sync_focus, sync_status_summary, completion comments, idempotency verified (0 drift on second run)"
+  - "[x] MVP-006.2 COMPLETE — Compass MCP Server: 7 tools (dashboard/briefing/attention/roadmap/commitments/sync_roadmap/system_status), no direct external deps, get_system_status() added"
+  - "[x] MVP-006 IN PROGRESS — Executive Dashboard expanded: roadmap_progress, system_health (reuses check_system_health service)"
 
 in_progress:
-  - MVP-006.3: ClickUp Operational Mirror — sync_focus + sync_status_summary + completion comments live, dashboard extended
+  - MVP-006: Executive Dashboard — expanded with roadmap_progress + system_health, pending Railway deploy + validation
 
 next:
-  - Push MVP-006.3 to Railway, run POST /sync/roadmap to verify [FOCUS] + [STATUS] tasks in ClickUp
-  - MVP-006.2: Validate /mcp/sse accessible in production
+  - Push to Railway, validate GET /dashboard returns roadmap_progress + system_health in production
+  - Run POST /sync/roadmap to update [FOCUS] → Executive Dashboard + mark 006.2/006.3 complete in ClickUp
+  - Validate /mcp endpoint is accessible at compass-production-2fc4.up.railway.app/mcp
+  - MVP-006 final acceptance: dashboard is primary human-facing entry point
   - MVP-005.3: Izibizi integration
   - MVP-005.4: WordPress integration
   - Backlog: Railway Cron for daily briefing at 08:00 Europe/Lisbon
@@ -117,11 +121,11 @@ roadmap:
 
   MVP-006.2:
     name: Compass MCP Server
-    status: active
+    status: complete
 
   MVP-006.3:
     name: ClickUp Operational Mirror
-    status: active
+    status: complete
 
 commitments:
   - id: CMP-001
@@ -136,12 +140,12 @@ commitments:
 
   - id: CMP-005
     title: Compass MCP Server
-    status: active
+    status: complete
     created_at: "2026-06-15"
 
   - id: CMP-006
     title: ClickUp Operational Mirror
-    status: active
+    status: complete
     created_at: "2026-06-15"
 
   - id: CMP-002
@@ -174,7 +178,9 @@ architecture_decisions:
   - Compass MCP server (FastMCP) mounted at /mcp via SSE; 6 tools expose DB + roadmap data; registered in .mcp.json as SSE URL (no subprocess)
   - MCP tools use SessionLocal() directly with try/finally (no FastAPI Depends injection)
   - ClickUp operational mirror: sync_focus() maintains one [FOCUS] task; sync_status_summary() maintains one [STATUS] task with auto-generated description; completion comments added on active→complete transitions; all in roadmap list
-  - Dashboard exposes current_focus/active_commitments/completed_milestones derived from compass-state.yaml (no DB duplication)
+  - Dashboard exposes current_focus/active_commitments/completed_milestones/roadmap_progress/system_health derived from compass-state.yaml + system_status service (no DB duplication)
+  - Single ClickUp list for all task types (roadmap + commitments + operational); CLICKUP_COMMITMENTS_LIST_ID intentionally equals CLICKUP_ROADMAP_LIST_ID
+  - system_health logic lives in app/services/system_status.py; both MCP get_system_status() tool and dashboard service call it (no duplication)
 
 # ── Operating Rule ─────────────────────────────────────────────────────────────
 # After every meaningful coding session:

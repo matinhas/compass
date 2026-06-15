@@ -2,6 +2,47 @@
 
 ---
 
+## 2026-06-15 — Session 8: MVP-006 Layer Complete — MCP + ClickUp Mirror + Dashboard
+
+### Completed
+
+**MVP-006.2 — Compass MCP Server (COMPLETE)**
+- Added `get_system_status()` MCP tool: checks database, roadmap_sync, gmail, respondio; returns environment + overall health + version
+- Logic extracted to `app/services/system_status.py`; MCP tool delegates to service (no duplication)
+- Verified: 7 tools registered, no direct external service imports in MCP tools layer
+- Verified: all tools callable, server starts cleanly
+
+**MVP-006.3 — ClickUp Operational Mirror (COMPLETE)**
+- Verified idempotency: two consecutive syncs produce 0 created, 1 updated (STATUS description refresh), 19 unchanged — no drift
+- All ClickUp objects present: [FOCUS], [STATUS], all [MVP-XXX], all [CMP-XXX]
+
+**MVP-006 — Executive Dashboard (expanded)**
+- Added `roadmap_progress: int` — % of roadmap milestones complete
+- Added `system_health: str` — reuses `check_system_health()` from system_status service
+- `app/schemas/dashboard.py` — two new fields
+- `app/services/dashboard.py` — computes both fields; imports service layer only
+- Dashboard is now the primary human-facing Compass entry point
+
+### Architecture
+- `app/services/system_status.py` — health check service (single source of truth)
+- `app/mcp/tools/system_status.py` — delegates to service (MCP interface)
+- `app/services/dashboard.py` — calls service directly (no MCP layer coupling)
+
+### Roadmap Updates
+- MVP-006.2 → complete
+- MVP-006.3 → complete
+- CMP-005 → complete
+- CMP-006 → complete
+- current_focus → MVP-006 (Executive Dashboard)
+
+### Next Session Should Start With
+1. Validate GET /dashboard in production returns all 10 fields including roadmap_progress + system_health
+2. Confirm /mcp endpoint accessible at production URL
+3. MVP-006 final sign-off once dashboard validated in production
+4. MVP-005.3: Izibizi integration
+
+---
+
 ## 2026-06-15 — Session 7: MVP-006.3 ClickUp Operational Mirror
 
 ### Completed

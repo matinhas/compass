@@ -1,3 +1,4 @@
+import asyncio
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -74,6 +75,14 @@ def generate_dashboard(db: Session) -> DashboardResponse:
     roadmap = state.get("roadmap", {})
     commitments = state.get("commitments", [])
 
+    total = len(roadmap)
+    complete_count = sum(1 for e in roadmap.values() if e.get("status") == "complete")
+    roadmap_progress = int(complete_count / total * 100) if total else 0
+
+    from app.services.system_status import check_system_health
+    status_data = asyncio.run(check_system_health())
+    system_health = status_data["overall"]
+
     return DashboardResponse(
         critical_count=critical_count,
         high_count=high_count,
@@ -84,5 +93,7 @@ def generate_dashboard(db: Session) -> DashboardResponse:
         generated_at=now.isoformat(),
         current_focus=_compass_focus(state),
         active_commitments=sum(1 for c in commitments if c.get("status") == "active"),
-        completed_milestones=sum(1 for e in roadmap.values() if e.get("status") == "complete"),
+        completed_milestones=complete_count,
+        roadmap_progress=roadmap_progress,
+        system_health=system_health,
     )

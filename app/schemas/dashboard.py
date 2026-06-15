@@ -20,3 +20,5 @@ class DashboardResponse(BaseModel):
     current_focus: str
     active_commitments: int
     completed_milestones: int
+    roadmap_progress: int
+    system_health: str
