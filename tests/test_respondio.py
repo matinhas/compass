@@ -1,78 +1,66 @@
-import pytest
 from datetime import datetime, timedelta, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 from app.sources.respondio import RespondIoSource, _detect_risk, _build_capture
 
 
-def _conv(
+def _contact(
     id: int = 1,
     status: str = "open",
-    labels: list = None,
-    csat: int | None = None,
+    tags: list = None,
     created_days_ago: int = 1,
+    first_name: str = "Test",
+    last_name: str = "Contact",
 ) -> dict:
-    created = (datetime.now(timezone.utc) - timedelta(days=created_days_ago)).isoformat()
+    created_ts = int((datetime.now(timezone.utc) - timedelta(days=created_days_ago)).timestamp())
     return {
         "id": id,
         "status": status,
-        "labels": labels or [],
-        "csatScore": csat,
-        "createdAt": created,
-        "updatedAt": created,
-        "contact": {"name": "Test Contact", "phoneNumber": "+351910000000"},
-        "lastMessage": {"text": "Last message text"},
+        "tags": tags or [],
+        "created_at": created_ts,
+        "firstName": first_name,
+        "lastName": last_name,
+        "phone": "+351910000000",
+        "email": None,
+        "lifecycle": "Booked",
     }
 
 
-def test_low_csat_creates_customer_risk():
-    conv = _conv(csat=2)
-    assert _detect_risk(conv) == "customer_risk"
+def test_customer_risk_tag():
+    assert _detect_risk(_contact(tags=["escalated"])) == "customer_risk"
 
 
-def test_csat_above_threshold_not_risk():
-    conv = _conv(csat=4)
-    assert _detect_risk(conv) is None
+def test_no_matching_tag_not_risk():
+    assert _detect_risk(_contact(tags=["booking-confirmed"])) is None
 
 
-def test_customer_risk_label():
-    conv = _conv(labels=["escalated"])
-    assert _detect_risk(conv) == "customer_risk"
+def test_staff_risk_tag():
+    assert _detect_risk(_contact(tags=["misconduct"])) == "staff_risk"
 
 
-def test_staff_risk_label():
-    conv = _conv(labels=["misconduct"])
-    assert _detect_risk(conv) == "staff_risk"
-
-
-def test_operational_risk_label():
-    conv = _conv(labels=["outage"])
-    assert _detect_risk(conv) == "operational_risk"
+def test_operational_risk_tag():
+    assert _detect_risk(_contact(tags=["outage"])) == "operational_risk"
 
 
 def test_unresolved_3_days_is_operational_risk():
-    conv = _conv(status="open", created_days_ago=4)
-    assert _detect_risk(conv) == "operational_risk"
+    assert _detect_risk(_contact(status="open", created_days_ago=4)) == "operational_risk"
 
 
 def test_unresolved_1_day_not_risk():
-    conv = _conv(status="open", created_days_ago=1)
-    assert _detect_risk(conv) is None
+    assert _detect_risk(_contact(status="open", created_days_ago=1)) is None
 
 
-def test_resolved_old_conversation_not_risk():
-    conv = _conv(status="resolved", created_days_ago=10)
-    assert _detect_risk(conv) is None
+def test_closed_old_contact_not_risk():
+    assert _detect_risk(_contact(status="closed", created_days_ago=10)) is None
 
 
-def test_no_risk_conversation_skipped():
-    conv = _conv(labels=[], csat=None, status="open", created_days_ago=1)
-    assert _detect_risk(conv) is None
+def test_no_risk_contact_skipped():
+    assert _detect_risk(_contact(tags=[], status="open", created_days_ago=1)) is None
 
 
 def test_build_capture_sets_correct_fields():
-    conv = _conv(id=42, labels=["escalated"], csat=2)
-    nc = _build_capture(conv, "customer_risk", "mirra")
+    contact = _contact(id=42, tags=["escalated"])
+    nc = _build_capture(contact, "customer_risk", "mirra")
 
     assert nc.source_type == "respondio"
     assert nc.source_instance == "mirra"
@@ -83,18 +71,24 @@ def test_build_capture_sets_correct_fields():
     assert "Test Contact" in nc.content
 
 
-async def test_fetch_filters_only_risk_conversations():
+def test_build_capture_contact_name_from_name_fields():
+    contact = _contact(id=1, first_name="Ana", last_name="Silva")
+    nc = _build_capture(contact, "staff_risk", "mirra")
+    assert "Ana Silva" in nc.content
+
+
+async def test_fetch_filters_only_risk_contacts():
     source = RespondIoSource(instance="mirra")
     source._api_key = "test-key"
 
-    conversations = [
-        _conv(id=1, labels=["escalated"]),      # customer_risk → included
-        _conv(id=2, labels=[]),                  # no risk → skipped
-        _conv(id=3, csat=1),                     # customer_risk → included
-        _conv(id=4, status="resolved"),           # resolved, no label → skipped
+    contacts = [
+        _contact(id=1, tags=["escalated"]),    # customer_risk → included
+        _contact(id=2, tags=[]),               # no risk → skipped
+        _contact(id=3, tags=["outage"]),       # operational_risk → included
+        _contact(id=4, status="closed"),       # closed, no tag → skipped
     ]
 
-    with patch.object(source, "_list_conversations", new=AsyncMock(return_value=conversations)):
+    with patch.object(source, "_list_contacts", new=AsyncMock(return_value=contacts)):
         captures = await source.fetch()
 
     assert len(captures) == 2
