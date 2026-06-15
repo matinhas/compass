@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from app.api.capture import router as capture_router
@@ -8,7 +10,14 @@ from app.api.integrations import router as integrations_router
 from app.api.sync import router as sync_router
 from app.mcp.server import mcp as compass_mcp
 
-app = FastAPI(title="Compass", version="0.1.0", description="Capture → ClickUp pipeline")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with compass_mcp.session_manager.run():
+        yield
+
+
+app = FastAPI(title="Compass", version="0.1.0", description="Capture → ClickUp pipeline", lifespan=lifespan)
 
 
 @app.get("/health", tags=["system"])
