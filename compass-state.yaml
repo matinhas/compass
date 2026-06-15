@@ -31,15 +31,13 @@ completed:
 in_progress: []
 
 next:
-  - Diagnose matinhas@gmail.com upstream error (timeout or bad refresh token)
   - MVP-005.2: respond.io integration
   - MVP-005.3: Izibizi integration
   - MVP-005.4: WordPress integration
   - Backlog: Railway Cron for daily briefing at 08:00 Europe/Lisbon
   - Backlog: Briefing delivery (email / WhatsApp / ClickUp task)
 
-blocked:
-  - matinhas@gmail.com sync returning upstream error — likely timeout (large inbox) or wrong refresh token
+blocked: []
 
 technical_debt: []
 
@@ -98,7 +96,9 @@ roadmap:
         name: Gmail Integration
         status: complete
         notes: SourceProvider architecture, GmailSource via OAuth2+httpx, POST /integrations/gmail/sync, duplicate protection by external_id, multi-account via per-account refresh token env vars
-        validated: admin@mirra.pt — 39 emails processed, 12 captures created in production
+        validated:
+          - admin@mirra.pt — 39 emails processed, 12 captures created
+          - matinhas@gmail.com — 93 emails processed, duplicate protection confirmed
       MVP-005.2:
         name: respond.io Integration
         status: planned
