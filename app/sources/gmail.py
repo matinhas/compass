@@ -10,12 +10,16 @@ _TOKEN_URL = "https://oauth2.googleapis.com/token"
 _GMAIL_BASE = "https://gmail.googleapis.com/gmail/v1/users/me"
 
 
+def _refresh_token_env_key(account: str) -> str:
+    return "GOOGLE_REFRESH_TOKEN_" + account.upper().replace("@", "_").replace(".", "_")
+
+
 class GmailSource(SourceProvider):
     def __init__(self, account: str) -> None:
         self._account = account
         self._client_id = os.getenv("GOOGLE_CLIENT_ID", "")
         self._client_secret = os.getenv("GOOGLE_CLIENT_SECRET", "")
-        self._refresh_token = os.getenv("GOOGLE_REFRESH_TOKEN", "")
+        self._refresh_token = os.getenv(_refresh_token_env_key(account), "")
 
     async def _get_access_token(self, client: httpx.AsyncClient) -> str:
         resp = await client.post(
@@ -32,7 +36,10 @@ class GmailSource(SourceProvider):
 
     async def fetch(self) -> list[NormalizedCapture]:
         if not all([self._client_id, self._client_secret, self._refresh_token]):
-            raise ValueError("Gmail credentials not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN.")
+            token_key = _refresh_token_env_key(self._account)
+            raise ValueError(
+                f"Gmail credentials not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and {token_key}."
+            )
 
         async with httpx.AsyncClient(timeout=30.0) as client:
             token = await self._get_access_token(client)
