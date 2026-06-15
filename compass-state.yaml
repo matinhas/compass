@@ -1,7 +1,7 @@
 project: Compass
 version: "0.1"
 phase: MVP-005
-last_updated: "2026-06-15"
+last_updated: "2026-06-15"  # session 3
 
 repository: https://github.com/matinhas/compass
 deployment: Railway
@@ -26,20 +26,20 @@ completed:
   - "[x] MVP-002 COMPLETE — AI classification layer (type/domain/priority/confidence/reasoning) via claude-opus-4-8"
   - "[x] MVP-003 COMPLETE — GET /briefing deterministic ranking (critical/high/top5/inbox_count) live in production"
   - "[x] MVP-004 COMPLETE — GET /attention dynamic scoring engine (priority+type+recency+confidence) live in production"
-  - "[x] MVP-005.1 COMPLETE — Gmail integration: SourceProvider architecture, GmailSource, POST /integrations/gmail/sync, duplicate protection, 3/3 tests passing"
+  - "[x] MVP-005.1 COMPLETE — Gmail integration live in production: admin@mirra.pt synced 39 emails → 12 captures, classified + ClickUp tasks created"
 
 in_progress: []
 
 next:
-  - Configure GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN in Railway
-  - End-to-end test POST /integrations/gmail/sync with real Gmail account
+  - Diagnose matinhas@gmail.com upstream error (timeout or bad refresh token)
   - MVP-005.2: respond.io integration
   - MVP-005.3: Izibizi integration
   - MVP-005.4: WordPress integration
   - Backlog: Railway Cron for daily briefing at 08:00 Europe/Lisbon
   - Backlog: Briefing delivery (email / WhatsApp / ClickUp task)
 
-blocked: []
+blocked:
+  - matinhas@gmail.com sync returning upstream error — likely timeout (large inbox) or wrong refresh token
 
 technical_debt: []
 
@@ -97,7 +97,8 @@ roadmap:
       MVP-005.1:
         name: Gmail Integration
         status: complete
-        notes: SourceProvider architecture, GmailSource via OAuth2+httpx, POST /integrations/gmail/sync, duplicate protection by external_id
+        notes: SourceProvider architecture, GmailSource via OAuth2+httpx, POST /integrations/gmail/sync, duplicate protection by external_id, multi-account via per-account refresh token env vars
+        validated: admin@mirra.pt — 39 emails processed, 12 captures created in production
       MVP-005.2:
         name: respond.io Integration
         status: planned
@@ -118,6 +119,9 @@ architecture_decisions:
   - Alembic owns schema — no create_all in app startup
   - Procfile is the Railway start command (Dockerfile removed — caused PORT conflict)
   - compass-state.yaml is development truth; ClickUp is operational truth. If they disagree, developers follow compass-state.yaml and management follows ClickUp. Periodic sync keeps them aligned.
+  - Gmail integration uses per-account refresh tokens: GOOGLE_REFRESH_TOKEN_<ACCOUNT_EMAIL_UPPERCASED> (@ and . replaced with _)
+  - All external sources flow through NormalizedCapture → create_capture_from_source → existing classify + ClickUp pipeline
+  - Duplicate protection: external_id unique check before insert (indexed)
 
 # ── Operating Rule ─────────────────────────────────────────────────────────────
 # After every meaningful coding session:
