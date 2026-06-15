@@ -2,6 +2,42 @@
 
 ---
 
+## 2026-06-15 — Session 7: MVP-006.3 ClickUp Operational Mirror
+
+### Completed
+
+**MVP-006.3 — ClickUp Operational Mirror**
+
+Extended `app/services/roadmap_sync.py`:
+- `sync_focus()` — creates/maintains single `[FOCUS] <name>` task in roadmap list; updates name if focus changes; idempotent
+- `sync_status_summary()` — creates/maintains `[STATUS] Compass Project Status` task; description auto-generated from roadmap layer progress (Foundation Layer ✅ / Integrations % / Operations Layer %) plus current focus and next milestone; always refreshed on sync
+- `_add_comment()` — posts ClickUp comment on task; called by `_sync_list` when status transitions `non-complete → complete`; format: "Milestone completed by Compass Sync. Date: YYYY-MM-DD"
+- `_create_task()` — now accepts optional `description`
+- `_update_task()` — now accepts optional `description`
+- `sync()` — now calls all four sync stages: roadmap → commitments → focus → status summary
+
+Extended `GET /dashboard`:
+- `app/schemas/dashboard.py` — added `current_focus: str`, `active_commitments: int`, `completed_milestones: int`
+- `app/services/dashboard.py` — loads compass-state.yaml to populate new fields; reuses YAML path pattern; no DB duplication
+
+### compass-state.yaml Updates
+- `MVP-006.3: ClickUp Operational Mirror` → active
+- `CMP-006: ClickUp Operational Mirror` → active
+- `current_focus` → MVP-006.3
+- Architecture decisions updated
+
+### Roadmap Updates
+- MVP-006.3 added (active)
+- CMP-006 added (active)
+
+### Next Session Should Start With
+1. Validate `[FOCUS]` and `[STATUS]` tasks appear in ClickUp after deploy + sync
+2. Validate dashboard returns `current_focus`, `active_commitments`, `completed_milestones`
+3. MVP-006.2: confirm `/mcp/sse` accessible in production
+4. MVP-005.3: Izibizi integration
+
+---
+
 ## 2026-06-15 — Session 6: MVP-006 Dashboard Validated + MVP-006.2 Compass MCP Server
 
 ### Completed

@@ -1,11 +1,30 @@
 from collections import defaultdict
 from datetime import datetime, timezone
+from pathlib import Path
 
+import yaml
 from sqlalchemy.orm import Session
 
 from app.models.capture import Capture
 from app.schemas.dashboard import DashboardResponse, DashboardTopItem
 from app.services.attention import _score
+
+_YAML_PATH = Path(__file__).parent.parent.parent / "compass-state.yaml"
+
+
+def _load_compass_state() -> dict:
+    with open(_YAML_PATH) as f:
+        return yaml.safe_load(f)
+
+
+def _compass_focus(state: dict) -> str:
+    items = state.get("current_focus", [])
+    if not items:
+        return ""
+    item = items[-1]
+    if isinstance(item, dict):
+        return next(iter(item.values()), "")
+    return str(item)
 
 
 def generate_dashboard(db: Session) -> DashboardResponse:
@@ -51,6 +70,10 @@ def generate_dashboard(db: Session) -> DashboardResponse:
         for score, c in scored[:5]
     ]
 
+    state = _load_compass_state()
+    roadmap = state.get("roadmap", {})
+    commitments = state.get("commitments", [])
+
     return DashboardResponse(
         critical_count=critical_count,
         high_count=high_count,
@@ -59,4 +82,7 @@ def generate_dashboard(db: Session) -> DashboardResponse:
         domain_breakdown=dict(domain_breakdown),
         top_attention=top_attention,
         generated_at=now.isoformat(),
+        current_focus=_compass_focus(state),
+        active_commitments=sum(1 for c in commitments if c.get("status") == "active"),
+        completed_milestones=sum(1 for e in roadmap.values() if e.get("status") == "complete"),
     )

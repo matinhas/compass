@@ -17,3 +17,6 @@ class DashboardResponse(BaseModel):
     domain_breakdown: dict[str, int]
     top_attention: list[DashboardTopItem]
     generated_at: str
+    current_focus: str
+    active_commitments: int
+    completed_milestones: int

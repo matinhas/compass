@@ -1,7 +1,7 @@
 project: Compass
 version: "0.1"
 phase: MVP-006
-last_updated: "2026-06-15"  # session 5
+last_updated: "2026-06-15"  # session 6
 
 repository: https://github.com/matinhas/compass
 deployment: Railway
@@ -9,7 +9,7 @@ production_url: https://compass-production-2fc4.up.railway.app
 stack: Python 3.12 / FastAPI / PostgreSQL / SQLAlchemy 2.0 / Alembic
 
 current_focus:
-  - MVP-006.2: Compass MCP Server
+  - MVP-006.3: ClickUp Operational Mirror
 
 completed:
   - Repository created (github.com/matinhas/compass, branch main)
@@ -31,13 +31,14 @@ completed:
   - "[x] MVP-006.1 COMPLETE — Roadmap Synchronization: POST /sync/roadmap, compass-state.yaml → ClickUp, prefix-key matching, idempotent, 12 tasks live"
   - "[x] MVP-006 COMPLETE — GET /dashboard: critical/high counts, captures_today, source_breakdown, domain_breakdown, top_attention"
   - "[x] MVP-006.2 IN PROGRESS — Compass MCP Server: FastMCP, 6 tools (dashboard/briefing/attention/roadmap/commitments/sync_roadmap), mounted at /mcp SSE"
+  - "[x] MVP-006.3 IN PROGRESS — ClickUp Operational Mirror: sync_focus, sync_status_summary, completion comments, dashboard extended (current_focus/active_commitments/completed_milestones)"
 
 in_progress:
-  - MVP-006.2: Compass MCP Server — FastMCP mounted at /mcp, .mcp.json updated, pending Railway deploy
+  - MVP-006.3: ClickUp Operational Mirror — sync_focus + sync_status_summary + completion comments live, dashboard extended
 
 next:
-  - Push MVP-006.2 to Railway, validate /mcp/sse accessible
-  - Run POST /sync/roadmap to reflect MVP-006.2 active in ClickUp
+  - Push MVP-006.3 to Railway, run POST /sync/roadmap to verify [FOCUS] + [STATUS] tasks in ClickUp
+  - MVP-006.2: Validate /mcp/sse accessible in production
   - MVP-005.3: Izibizi integration
   - MVP-005.4: WordPress integration
   - Backlog: Railway Cron for daily briefing at 08:00 Europe/Lisbon
@@ -118,6 +119,10 @@ roadmap:
     name: Compass MCP Server
     status: active
 
+  MVP-006.3:
+    name: ClickUp Operational Mirror
+    status: active
+
 commitments:
   - id: CMP-001
     title: Roadmap Synchronization
@@ -131,6 +136,11 @@ commitments:
 
   - id: CMP-005
     title: Compass MCP Server
+    status: active
+    created_at: "2026-06-15"
+
+  - id: CMP-006
+    title: ClickUp Operational Mirror
     status: active
     created_at: "2026-06-15"
 
@@ -163,6 +173,8 @@ architecture_decisions:
   - Roadmap tasks named [MVP-XXX] Name; commitment tasks named [CMP-XXX] Title
   - Compass MCP server (FastMCP) mounted at /mcp via SSE; 6 tools expose DB + roadmap data; registered in .mcp.json as SSE URL (no subprocess)
   - MCP tools use SessionLocal() directly with try/finally (no FastAPI Depends injection)
+  - ClickUp operational mirror: sync_focus() maintains one [FOCUS] task; sync_status_summary() maintains one [STATUS] task with auto-generated description; completion comments added on active→complete transitions; all in roadmap list
+  - Dashboard exposes current_focus/active_commitments/completed_milestones derived from compass-state.yaml (no DB duplication)
 
 # ── Operating Rule ─────────────────────────────────────────────────────────────
 # After every meaningful coding session:
