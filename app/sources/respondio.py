@@ -6,7 +6,7 @@ import httpx
 from app.sources.base import SourceProvider
 from app.sources.models import NormalizedCapture
 
-_BASE = "https://app.respond.io/api/v2"
+_BASE = "https://api.respond.io/v2"
 
 _CUSTOMER_RISK_LABELS = {"escalated", "complaint", "unhappy", "refund", "cancellation", "dispute", "chargeback"}
 _STAFF_RISK_LABELS = {"staff-issue", "staff-complaint", "misconduct", "hr", "conduct"}
@@ -124,7 +124,7 @@ class RespondIoSource(SourceProvider):
         if not self._api_key:
             raise ValueError("RESPONDIO_API_KEY not configured.")
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
             conversations = await self._list_conversations(client)
 
         self.conversations_scanned = len(conversations)
