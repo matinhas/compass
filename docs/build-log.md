@@ -2,6 +2,37 @@
 
 ---
 
+## 2026-06-15 — Session 6: MVP-006 Dashboard Validated + MVP-006.2 Compass MCP Server
+
+### Completed
+
+**MVP-006 — Executive Dashboard (validated)**
+- `GET /dashboard` deployed and live in production
+- Returns critical/high counts, captures_today, source/domain breakdowns, top 5 attention items
+
+**MVP-006.2 — Compass MCP Server**
+- `app/mcp/server.py` — FastMCP instance with 6 registered tools
+- `app/mcp/tools/dashboard.py` — `get_dashboard` (DB → DashboardResponse)
+- `app/mcp/tools/briefing.py` — `get_briefing` (DB → daily briefing summary)
+- `app/mcp/tools/attention.py` — `get_attention` (DB → top 10 scored items)
+- `app/mcp/tools/roadmap.py` — `get_roadmap` (compass-state.yaml → key/status map)
+- `app/mcp/tools/commitments.py` — `get_commitments` (YAML) + `sync_roadmap` (→ ClickUp)
+- `app/main.py` — MCP mounted at `/mcp` via `compass_mcp.sse_app()`
+- `.mcp.json` — Compass SSE server added: `https://compass-production-2fc4.up.railway.app/mcp/sse`
+- `requirements.txt` — `mcp>=1.2.0` added
+- All MCP tools use `SessionLocal()` directly (no FastAPI Depends)
+
+### Roadmap Updates
+- MVP-006 → complete; MVP-006.2 → active
+- CMP-005 (Compass MCP Server) → active
+
+### Next Session Should Start With
+1. Push MVP-006.2 to Railway and verify `/mcp/sse` responds
+2. Run `POST /sync/roadmap` to update ClickUp with MVP-006.2 active
+3. MVP-005.3 Izibizi integration
+
+---
+
 ## 2026-06-15 — Session 5: MVP-006.1 Complete + MVP-006 Executive Dashboard
 
 ### Completed

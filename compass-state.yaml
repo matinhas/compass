@@ -9,7 +9,7 @@ production_url: https://compass-production-2fc4.up.railway.app
 stack: Python 3.12 / FastAPI / PostgreSQL / SQLAlchemy 2.0 / Alembic
 
 current_focus:
-  - MVP-006: Executive Dashboard
+  - MVP-006.2: Compass MCP Server
 
 completed:
   - Repository created (github.com/matinhas/compass, branch main)
@@ -29,13 +29,15 @@ completed:
   - "[x] MVP-005.1 COMPLETE — Gmail integration live in production: admin@mirra.pt synced 39 emails → 12 captures, classified + ClickUp tasks created"
   - "[x] MVP-005.2 COMPLETE — respond.io integration: risk-based contact scan via /v2/contact/list, POST /integrations/respondio/sync, 11 tests passing"
   - "[x] MVP-006.1 COMPLETE — Roadmap Synchronization: POST /sync/roadmap, compass-state.yaml → ClickUp, prefix-key matching, idempotent, 12 tasks live"
-  - "[x] MVP-006 IN PROGRESS — GET /dashboard implemented: critical/high counts, captures_today, source_breakdown, domain_breakdown, top_attention"
+  - "[x] MVP-006 COMPLETE — GET /dashboard: critical/high counts, captures_today, source_breakdown, domain_breakdown, top_attention"
+  - "[x] MVP-006.2 IN PROGRESS — Compass MCP Server: FastMCP, 6 tools (dashboard/briefing/attention/roadmap/commitments/sync_roadmap), mounted at /mcp SSE"
 
 in_progress:
-  - MVP-006: Executive Dashboard — GET /dashboard deployed, pending production validation
+  - MVP-006.2: Compass MCP Server — FastMCP mounted at /mcp, .mcp.json updated, pending Railway deploy
 
 next:
-  - Validate GET /dashboard in production
+  - Push MVP-006.2 to Railway, validate /mcp/sse accessible
+  - Run POST /sync/roadmap to reflect MVP-006.2 active in ClickUp
   - MVP-005.3: Izibizi integration
   - MVP-005.4: WordPress integration
   - Backlog: Railway Cron for daily briefing at 08:00 Europe/Lisbon
@@ -112,6 +114,10 @@ roadmap:
     name: Roadmap Synchronization
     status: complete
 
+  MVP-006.2:
+    name: Compass MCP Server
+    status: active
+
 commitments:
   - id: CMP-001
     title: Roadmap Synchronization
@@ -120,6 +126,11 @@ commitments:
 
   - id: CMP-004
     title: Executive Dashboard
+    status: active
+    created_at: "2026-06-15"
+
+  - id: CMP-005
+    title: Compass MCP Server
     status: active
     created_at: "2026-06-15"
 
@@ -150,6 +161,8 @@ architecture_decisions:
   - respond.io MCP server installed at .mcp.json (project scope) for API exploration
   - compass-state.yaml is the sync source; POST /sync/roadmap pushes to ClickUp (CLICKUP_ROADMAP_LIST_ID + CLICKUP_COMMITMENTS_LIST_ID)
   - Roadmap tasks named [MVP-XXX] Name; commitment tasks named [CMP-XXX] Title
+  - Compass MCP server (FastMCP) mounted at /mcp via SSE; 6 tools expose DB + roadmap data; registered in .mcp.json as SSE URL (no subprocess)
+  - MCP tools use SessionLocal() directly with try/finally (no FastAPI Depends injection)
 
 # ── Operating Rule ─────────────────────────────────────────────────────────────
 # After every meaningful coding session:

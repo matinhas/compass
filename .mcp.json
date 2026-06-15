@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "compass": {
+      "url": "https://compass-production-2fc4.up.railway.app/mcp/sse"
+    },
+    "respond-io": {
+      "command": "npx",
+      "args": ["-y", "@respond-io/mcp-server"],
+      "env": {
+        "RESPONDIO_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzAwNzIsInNwYWNlSWQiOjE0NDYyMiwib3JnSWQiOjE0NjU4NiwidHlwZSI6ImFwaSIsImlhdCI6MTc4MTUxOTg5NH0.C3dgbEtc6w1g01Fzi75gqGsc0_63hdtjJgYBQiazncM"
+      }
+    }
+  }
+}
