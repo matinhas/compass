@@ -70,6 +70,7 @@ async def test_imported_email_classified():
         reasoning="Overdue invoice requires immediate financial attention.",
         attention_required=True,
         attention_reason="Overdue invoice requires immediate action.",
+        attention_category="Financial",
     )
 
     with patch("app.services.capture_service._classifier") as mock_clf, \

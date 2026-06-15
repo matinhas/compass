@@ -32,6 +32,7 @@ class Capture(Base):
 
     attention_required = Column(Boolean, nullable=True)
     attention_reason = Column(Text, nullable=True)
+    attention_category = Column(String, nullable=True)
 
     @property
     def capture_id(self) -> str:

@@ -2,6 +2,33 @@
 
 ---
 
+## 2026-06-15 — Session 10: Attention-Driven Dashboard & Briefing
+
+### Completed
+
+**Attention category + dashboard attention_items + briefing restructure**
+
+- `alembic/versions/005_add_attention_category.py` — migration adds `attention_category` (String) to captures table
+- `app/models/capture.py` — `attention_category` column added
+- `app/services/classifier.py` — prompt extended with `attention_category` field (Decision/Customer/Financial/Legal/Operational); `ClassificationResult` updated
+- `app/schemas/dashboard.py` — new `DashboardAttentionItem` model; `DashboardResponse` gains `attention_items: list[DashboardAttentionItem]`
+- `app/services/dashboard.py` — `_derive_title()` helper (extracts Subject line for gmail, first non-empty line otherwise); `attention_items` built from scored attention_required captures (top 10), sorted by attention_score; `top_attention` still present (top 5) for backward compat
+- `app/services/briefing.py` — fully restructured: `emails_received_today` (all gmail today), `require_attention` (gmail attention_required today), `top_attention` (top 5 scored attention items across all sources), filters to `attention_required=True` only
+- `app/mcp/tools/briefing.py` — updated output to match new briefing structure
+- `tests/test_gmail.py` — `ClassificationResult` fixture updated with `attention_category="Financial"`
+
+### Behaviour
+- Dashboard `/dashboard` now returns `attention_items` with titles, categories, reasons — actionable at a glance
+- Briefing `/briefing` now answers: how many emails today? how many need attention? what are the top items?
+- All 15 tests passing
+
+### Next Session Should Start With
+1. Push to Railway + `alembic upgrade head` (migration 005)
+2. Validate `/dashboard` attention_items + `/briefing` email counts in production
+3. MVP-005.3: Izibizi integration
+
+---
+
 ## 2026-06-15 — Session 9: Attention Filtering
 
 ### Completed

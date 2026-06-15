@@ -1,7 +1,7 @@
 project: Compass
 version: "0.1"
 phase: MVP-006
-last_updated: "2026-06-15"  # session 9
+last_updated: "2026-06-15"  # session 10
 
 repository: https://github.com/matinhas/compass
 deployment: Railway
@@ -9,7 +9,7 @@ production_url: https://compass-production-2fc4.up.railway.app
 stack: Python 3.12 / FastAPI / PostgreSQL / SQLAlchemy 2.0 / Alembic
 
 current_focus:
-  - MVP-005.3: Izibizi Integration
+  - MVP-006: Attention-Driven Gmail Processing
 
 completed:
   - Repository created (github.com/matinhas/compass, branch main)
@@ -34,16 +34,14 @@ completed:
   - "[x] MVP-006.3 COMPLETE — ClickUp Operational Mirror: sync_focus, sync_status_summary, completion comments, idempotency verified (0 drift on second run)"
   - "[x] MVP-006.2 COMPLETE — Compass MCP Server: 7 tools (dashboard/briefing/attention/roadmap/commitments/sync_roadmap/system_status), no direct external deps, get_system_status() added"
   - "[x] MVP-006 IN PROGRESS — Executive Dashboard expanded: roadmap_progress, system_health (reuses check_system_health service)"
+  - "[x] MVP-006 Attention-Driven — attention_category added (005 migration), dashboard attention_items list, briefing restructured to show email counts + top attention items"
 
-in_progress:
-  - MVP-006: Executive Dashboard — COMPLETE. Signed off with roadmap_progress + system_health + current_focus + active_commitments + completed_milestones
-  - "[x] Attention Filtering — attention_required + attention_reason added to classifier output, Alembic migration 004, attention engine + dashboard filter to attention_required=True only"
+in_progress: []
 
 next:
-  - Push to Railway, validate GET /dashboard returns roadmap_progress + system_health in production
-  - Run POST /sync/roadmap to update [FOCUS] → Executive Dashboard + mark 006.2/006.3 complete in ClickUp
-  - Validate /mcp endpoint is accessible at compass-production-2fc4.up.railway.app/mcp
-  - MVP-006 final acceptance: dashboard is primary human-facing entry point
+  - Push to Railway + run alembic upgrade head (migration 005)
+  - Validate new /dashboard returns attention_items list
+  - Validate /briefing returns emails_received_today + require_attention counts
   - MVP-005.3: Izibizi integration
   - MVP-005.4: WordPress integration
   - Backlog: Railway Cron for daily briefing at 08:00 Europe/Lisbon
@@ -182,7 +180,10 @@ architecture_decisions:
   - Dashboard exposes current_focus/active_commitments/completed_milestones/roadmap_progress/system_health derived from compass-state.yaml + system_status service (no DB duplication)
   - Single ClickUp list for all task types (roadmap + commitments + operational); CLICKUP_COMMITMENTS_LIST_ID intentionally equals CLICKUP_ROADMAP_LIST_ID
   - system_health logic lives in app/services/system_status.py; both MCP get_system_status() tool and dashboard service call it (no duplication)
-  - Attention filtering: classifier returns attention_required (bool) + attention_reason (str|null); attention engine and dashboard both filter to attention_required=True; NULL rows (pre-migration captures) are excluded
+  - Attention filtering: classifier returns attention_required (bool) + attention_reason (str|null) + attention_category (str|null); attention engine and dashboard both filter to attention_required=True; NULL rows (pre-migration captures) are excluded
+  - Dashboard attention_items: top 10 attention_required captures, scored and sorted, with derived title (Subject: line for gmail, first non-empty line otherwise)
+  - Briefing restructured: emails_received_today (all gmail today), require_attention (gmail attention_required today), top_attention (scored top 5 across all sources)
+  - attention_category values: Decision | Customer | Financial | Legal | Operational
 
 # ── Operating Rule ─────────────────────────────────────────────────────────────
 # After every meaningful coding session:

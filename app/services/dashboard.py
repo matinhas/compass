@@ -7,7 +7,7 @@ import yaml
 from sqlalchemy.orm import Session
 
 from app.models.capture import Capture
-from app.schemas.dashboard import DashboardResponse, DashboardTopItem
+from app.schemas.dashboard import DashboardAttentionItem, DashboardResponse, DashboardTopItem
 from app.services.attention import _score
 
 _YAML_PATH = Path(__file__).parent.parent.parent / "compass-state.yaml"
@@ -26,6 +26,18 @@ def _compass_focus(state: dict) -> str:
     if isinstance(item, dict):
         return next(iter(item.values()), "")
     return str(item)
+
+
+def _derive_title(capture: Capture) -> str:
+    """Extract a human-readable title from capture content."""
+    for line in capture.content.splitlines():
+        if line.startswith("Subject:"):
+            return line[8:].strip()
+    for line in capture.content.splitlines():
+        stripped = line.strip()
+        if stripped:
+            return stripped[:80]
+    return capture.content[:80]
 
 
 def generate_dashboard(db: Session) -> DashboardResponse:
@@ -60,6 +72,19 @@ def generate_dashboard(db: Session) -> DashboardResponse:
 
     scored.sort(key=lambda x: x[0], reverse=True)
 
+    attention_items = [
+        DashboardAttentionItem(
+            capture_id=c.capture_id,
+            source=c.source_type or c.source or "manual",
+            title=_derive_title(c),
+            priority=c.classification_priority,
+            attention_score=score,
+            reason=c.attention_reason,
+            category=c.attention_category,
+        )
+        for score, c in scored[:10]
+    ]
+
     top_attention = [
         DashboardTopItem(
             capture_id=c.capture_id,
@@ -87,13 +112,14 @@ def generate_dashboard(db: Session) -> DashboardResponse:
         critical_count=critical_count,
         high_count=high_count,
         captures_today=captures_today,
-        source_breakdown=dict(source_breakdown),
-        domain_breakdown=dict(domain_breakdown),
+        attention_items=attention_items,
         top_attention=top_attention,
         generated_at=now.isoformat(),
         current_focus=_compass_focus(state),
         active_commitments=sum(1 for c in commitments if c.get("status") == "active"),
         completed_milestones=complete_count,
         roadmap_progress=roadmap_progress,
+        source_breakdown=dict(source_breakdown),
+        domain_breakdown=dict(domain_breakdown),
         system_health=system_health,
     )

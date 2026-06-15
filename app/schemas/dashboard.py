@@ -9,16 +9,33 @@ class DashboardTopItem(BaseModel):
     attention_score: float
 
 
+class DashboardAttentionItem(BaseModel):
+    capture_id: str
+    source: str
+    title: str
+    priority: str | None
+    attention_score: float
+    reason: str | None
+    category: str | None
+
+
 class DashboardResponse(BaseModel):
+    # Executive summary
     critical_count: int
     high_count: int
     captures_today: int
-    source_breakdown: dict[str, int]
-    domain_breakdown: dict[str, int]
+    # Actionable attention items
+    attention_items: list[DashboardAttentionItem]
+    # Scored ranking
     top_attention: list[DashboardTopItem]
-    generated_at: str
+    # Roadmap
     current_focus: str
     active_commitments: int
     completed_milestones: int
     roadmap_progress: int
+    # Breakdown
+    source_breakdown: dict[str, int]
+    domain_breakdown: dict[str, int]
+    # System
     system_health: str
+    generated_at: str
