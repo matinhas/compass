@@ -1,7 +1,7 @@
 project: Compass
 version: "0.1"
 phase: MVP-005
-last_updated: "2026-06-15"  # session 3
+last_updated: "2026-06-15"  # session 4
 
 repository: https://github.com/matinhas/compass
 deployment: Railway
@@ -27,11 +27,11 @@ completed:
   - "[x] MVP-003 COMPLETE — GET /briefing deterministic ranking (critical/high/top5/inbox_count) live in production"
   - "[x] MVP-004 COMPLETE — GET /attention dynamic scoring engine (priority+type+recency+confidence) live in production"
   - "[x] MVP-005.1 COMPLETE — Gmail integration live in production: admin@mirra.pt synced 39 emails → 12 captures, classified + ClickUp tasks created"
+  - "[x] MVP-005.2 COMPLETE — respond.io integration: risk-based contact scan via /v2/contact/list, POST /integrations/respondio/sync, 11 tests passing"
 
 in_progress: []
 
 next:
-  - MVP-005.2: respond.io integration
   - MVP-005.3: Izibizi integration
   - MVP-005.4: WordPress integration
   - Backlog: Railway Cron for daily briefing at 08:00 Europe/Lisbon
@@ -69,45 +69,56 @@ mvp_002_scope:
 
 roadmap:
   MVP-001:
-    name: Capture → ClickUp Inbox
+    name: Capture Engine
     status: complete
 
   MVP-002:
     name: AI Classification
     status: complete
-    goal: Classify each capture — type, domain, priority, confidence. No automation yet.
 
   MVP-003:
     name: Daily Briefing
     status: complete
-    goal: Automated daily summary of what deserves attention
 
   MVP-004:
     name: Attention Engine
     status: complete
-    goal: Ranking and prioritisation across all captures
 
-  MVP-005:
-    name: Integrations
-    status: in_progress
-    goal: Gmail, respond.io, Izibizi, WordPress
-    sub_milestones:
-      MVP-005.1:
-        name: Gmail Integration
-        status: complete
-        notes: SourceProvider architecture, GmailSource via OAuth2+httpx, POST /integrations/gmail/sync, duplicate protection by external_id, multi-account via per-account refresh token env vars
-        validated:
-          - admin@mirra.pt — 39 emails processed, 12 captures created
-          - matinhas@gmail.com — 93 emails processed, duplicate protection confirmed
-      MVP-005.2:
-        name: respond.io Integration
-        status: planned
-      MVP-005.3:
-        name: Izibizi Integration
-        status: planned
-      MVP-005.4:
-        name: WordPress Integration
-        status: planned
+  MVP-005.1:
+    name: Gmail Integration
+    status: complete
+
+  MVP-005.2:
+    name: respond.io Integration
+    status: complete
+
+  MVP-005.3:
+    name: Izibizi Integration
+    status: planned
+
+  MVP-005.4:
+    name: WordPress Integration
+    status: planned
+
+  MVP-006.1:
+    name: Roadmap Synchronization
+    status: active
+
+commitments:
+  - id: CMP-001
+    title: Roadmap Synchronization
+    status: active
+    created_at: "2026-06-15"
+
+  - id: CMP-002
+    title: Izibizi Integration
+    status: planned
+    created_at: "2026-06-15"
+
+  - id: CMP-003
+    title: WordPress Integration
+    status: planned
+    created_at: "2026-06-15"
 
 # ── Architecture Decisions ─────────────────────────────────────────────────────
 
@@ -122,6 +133,10 @@ architecture_decisions:
   - Gmail integration uses per-account refresh tokens: GOOGLE_REFRESH_TOKEN_<ACCOUNT_EMAIL_UPPERCASED> (@ and . replaced with _)
   - All external sources flow through NormalizedCapture → create_capture_from_source → existing classify + ClickUp pipeline
   - Duplicate protection: external_id unique check before insert (indexed)
+  - respond.io API is contact-centric: conversations are managed via contact identifiers at /v2/contact/list; no separate conversations resource exists
+  - respond.io MCP server installed at .mcp.json (project scope) for API exploration
+  - compass-state.yaml is the sync source; POST /sync/roadmap pushes to ClickUp (CLICKUP_ROADMAP_LIST_ID + CLICKUP_COMMITMENTS_LIST_ID)
+  - Roadmap tasks named [MVP-XXX] Name; commitment tasks named [CMP-XXX] Title
 
 # ── Operating Rule ─────────────────────────────────────────────────────────────
 # After every meaningful coding session:

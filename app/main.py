@@ -4,6 +4,7 @@ from app.api.capture import router as capture_router
 from app.api.briefing import router as briefing_router
 from app.api.attention import router as attention_router
 from app.api.integrations import router as integrations_router
+from app.api.sync import router as sync_router
 
 app = FastAPI(title="Compass", version="0.1.0", description="Capture → ClickUp pipeline")
 
@@ -17,3 +18,4 @@ app.include_router(capture_router)
 app.include_router(briefing_router)
 app.include_router(attention_router)
 app.include_router(integrations_router)
+app.include_router(sync_router)
