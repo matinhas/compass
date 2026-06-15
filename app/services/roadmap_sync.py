@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 from typing import NamedTuple
 
@@ -13,6 +14,14 @@ _STATUS_MAP = {
     "active": "in progress",
     "complete": "complete",
 }
+
+# Matches the [KEY] prefix at the start of a task name, e.g. "[MVP-005.1]" or "[CMP-002]"
+_KEY_RE = re.compile(r"^\[([^\]]+)\]")
+
+
+def _extract_key(task_name: str) -> str | None:
+    m = _KEY_RE.match(task_name)
+    return m.group(1) if m else None
 
 
 class SyncResult(NamedTuple):
@@ -31,26 +40,34 @@ class RoadmapSyncService:
         with open(_YAML_PATH) as f:
             return yaml.safe_load(f)
 
-    def _build_roadmap_tasks(self, state: dict) -> dict[str, str]:
-        tasks: dict[str, str] = {}
+    def _build_roadmap_tasks(self, state: dict) -> dict[str, tuple[str, str]]:
+        """Returns {key: (full_name, clickup_status)}."""
+        tasks: dict[str, tuple[str, str]] = {}
         for key, entry in state.get("roadmap", {}).items():
             name = f"[{key}] {entry['name']}"
-            tasks[name] = _STATUS_MAP.get(entry.get("status", "planned"), "to do")
+            status = _STATUS_MAP.get(entry.get("status", "planned"), "to do")
+            tasks[key] = (name, status)
         return tasks
 
-    def _build_commitment_tasks(self, state: dict) -> dict[str, str]:
-        tasks: dict[str, str] = {}
+    def _build_commitment_tasks(self, state: dict) -> dict[str, tuple[str, str]]:
+        """Returns {key: (full_name, clickup_status)}."""
+        tasks: dict[str, tuple[str, str]] = {}
         for c in state.get("commitments", []):
             name = f"[{c['id']}] {c['title']}"
-            tasks[name] = _STATUS_MAP.get(c.get("status", "planned"), "to do")
+            status = _STATUS_MAP.get(c.get("status", "planned"), "to do")
+            tasks[c["id"]] = (name, status)
         return tasks
 
     async def _fetch_list_tasks(
         self, client: httpx.AsyncClient, list_id: str
-    ) -> dict[str, tuple[str, str]]:
-        """Returns {task_name: (task_id, current_status_lowercase)}."""
+    ) -> dict[str, tuple[str, str, str]]:
+        """Returns {key: (task_id, task_name, current_status_lowercase)}.
+
+        Key is extracted from the [KEY] prefix of the task name. Tasks without
+        a recognisable prefix are skipped (not managed by Compass).
+        """
         headers = {"Authorization": self._api_key}
-        result: dict[str, tuple[str, str]] = {}
+        result: dict[str, tuple[str, str, str]] = {}
         page = 0
         while True:
             resp = await client.get(
@@ -61,8 +78,10 @@ class RoadmapSyncService:
             resp.raise_for_status()
             body = resp.json()
             for task in body.get("tasks", []):
-                current = task["status"]["status"].lower()
-                result[task["name"]] = (task["id"], current)
+                key = _extract_key(task["name"])
+                if key:
+                    current = task["status"]["status"].lower()
+                    result[key] = (task["id"], task["name"], current)
             if body.get("last_page"):
                 break
             page += 1
@@ -79,13 +98,22 @@ class RoadmapSyncService:
         )
         resp.raise_for_status()
 
-    async def _update_task_status(
-        self, client: httpx.AsyncClient, task_id: str, status: str
+    async def _update_task(
+        self,
+        client: httpx.AsyncClient,
+        task_id: str,
+        name: str | None = None,
+        status: str | None = None,
     ) -> None:
+        payload: dict = {}
+        if name is not None:
+            payload["name"] = name
+        if status is not None:
+            payload["status"] = status
         resp = await client.put(
             f"{_CLICKUP_BASE}/task/{task_id}",
             headers={"Authorization": self._api_key, "Content-Type": "application/json"},
-            json={"status": status},
+            json=payload,
             timeout=10.0,
         )
         resp.raise_for_status()
@@ -94,19 +122,26 @@ class RoadmapSyncService:
         self,
         client: httpx.AsyncClient,
         list_id: str,
-        expected: dict[str, str],
+        expected: dict[str, tuple[str, str]],
     ) -> SyncResult:
         existing = await self._fetch_list_tasks(client, list_id)
         created = updated = unchanged = 0
 
-        for name, target_status in expected.items():
-            if name not in existing:
-                await self._create_task(client, list_id, name, target_status)
+        for key, (target_name, target_status) in expected.items():
+            if key not in existing:
+                await self._create_task(client, list_id, target_name, target_status)
                 created += 1
             else:
-                task_id, current_status = existing[name]
-                if current_status != target_status:
-                    await self._update_task_status(client, task_id, target_status)
+                task_id, current_name, current_status = existing[key]
+                name_drift = current_name != target_name
+                status_drift = current_status != target_status
+                if name_drift or status_drift:
+                    await self._update_task(
+                        client,
+                        task_id,
+                        name=target_name if name_drift else None,
+                        status=target_status if status_drift else None,
+                    )
                     updated += 1
                 else:
                     unchanged += 1
