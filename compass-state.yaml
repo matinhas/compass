@@ -1,7 +1,7 @@
 project: Compass
 version: "0.1"
-phase: MVP-003
-last_updated: "2026-06-14"
+phase: MVP-005
+last_updated: "2026-06-15"
 
 repository: https://github.com/matinhas/compass
 deployment: Railway
@@ -9,7 +9,7 @@ production_url: https://compass-production-2fc4.up.railway.app
 stack: Python 3.12 / FastAPI / PostgreSQL / SQLAlchemy 2.0 / Alembic
 
 current_focus:
-  - MVP-003: Daily Briefing Engine
+  - MVP-005: Integrations
 
 completed:
   - Repository created (github.com/matinhas/compass, branch main)
@@ -24,13 +24,18 @@ completed:
   - DATABASE_URL + CLICKUP_API_KEY + CLICKUP_INBOX_LIST_ID configured
   - "[x] MVP-001 COMPLETE — first production capture CAP-00001 stored + ClickUp task 869dpfj88 created"
   - "[x] MVP-002 COMPLETE — AI classification layer (type/domain/priority/confidence/reasoning) via claude-opus-4-8"
-  - "[x] MVP-003 GET /briefing — deterministic ranking from Compass DB (critical/high/top5/inbox_count)"
+  - "[x] MVP-003 COMPLETE — GET /briefing deterministic ranking (critical/high/top5/inbox_count) live in production"
+  - "[x] MVP-004 COMPLETE — GET /attention dynamic scoring engine (priority+type+recency+confidence) live in production"
 
 in_progress: []
 
 next:
-  - MVP-003: Railway Cron — trigger GET /briefing at 08:00 Europe/Lisbon
-  - MVP-003: Deliver briefing output (email / WhatsApp / ClickUp task)
+  - MVP-005: Gmail integration — watch inbox, create captures from flagged emails
+  - MVP-005: respond.io integration — create captures from flagged conversations
+  - MVP-005: Izibizi integration — accounting alerts → captures
+  - MVP-005: WordPress integration — comments/contact form → captures
+  - Backlog: Railway Cron for daily briefing at 08:00 Europe/Lisbon
+  - Backlog: Briefing delivery (email / WhatsApp / ClickUp task)
 
 blocked: []
 
@@ -74,12 +79,12 @@ roadmap:
 
   MVP-003:
     name: Daily Briefing
-    status: planned
+    status: complete
     goal: Automated daily summary of what deserves attention
 
   MVP-004:
     name: Attention Engine
-    status: planned
+    status: complete
     goal: Ranking and prioritisation across all captures
 
   MVP-005:
