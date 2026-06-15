@@ -9,7 +9,7 @@ production_url: https://compass-production-2fc4.up.railway.app
 stack: Python 3.12 / FastAPI / PostgreSQL / SQLAlchemy 2.0 / Alembic
 
 current_focus:
-  - MVP-003: Daily Briefing
+  - MVP-003: Daily Briefing Engine
 
 completed:
   - Repository created (github.com/matinhas/compass, branch main)
@@ -24,13 +24,13 @@ completed:
   - DATABASE_URL + CLICKUP_API_KEY + CLICKUP_INBOX_LIST_ID configured
   - "[x] MVP-001 COMPLETE — first production capture CAP-00001 stored + ClickUp task 869dpfj88 created"
   - "[x] MVP-002 COMPLETE — AI classification layer (type/domain/priority/confidence/reasoning) via claude-opus-4-8"
+  - "[x] MVP-003 GET /briefing — deterministic ranking from Compass DB (critical/high/top5/inbox_count)"
 
 in_progress: []
 
 next:
-  - Add ANTHROPIC_API_KEY to Railway env vars
-  - Verify classification fields appear in POST /captures response
-  - MVP-003: Daily Briefing (scheduled job)
+  - MVP-003: Railway Cron — trigger GET /briefing at 08:00 Europe/Lisbon
+  - MVP-003: Deliver briefing output (email / WhatsApp / ClickUp task)
 
 blocked: []
 
