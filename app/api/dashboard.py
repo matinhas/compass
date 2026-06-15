@@ -9,5 +9,5 @@ router = APIRouter(tags=["dashboard"])
 
 
 @router.get("/dashboard", response_model=DashboardResponse)
-def get_dashboard(db: Session = Depends(get_db)):
-    return generate_dashboard(db)
+async def get_dashboard(db: Session = Depends(get_db)):
+    return await generate_dashboard(db)

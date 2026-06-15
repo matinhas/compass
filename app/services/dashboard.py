@@ -1,4 +1,3 @@
-import asyncio
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -40,7 +39,7 @@ def _derive_title(capture: Capture) -> str:
     return capture.content[:80]
 
 
-def generate_dashboard(db: Session) -> DashboardResponse:
+async def generate_dashboard(db: Session) -> DashboardResponse:
     now = datetime.now(timezone.utc)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
 
@@ -105,7 +104,7 @@ def generate_dashboard(db: Session) -> DashboardResponse:
     roadmap_progress = int(complete_count / total * 100) if total else 0
 
     from app.services.system_status import check_system_health
-    status_data = asyncio.run(check_system_health())
+    status_data = await check_system_health()
     system_health = status_data["overall"]
 
     return DashboardResponse(

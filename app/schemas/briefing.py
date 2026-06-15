@@ -1,12 +1,21 @@
 from datetime import datetime
 from pydantic import BaseModel
 
-from app.schemas.capture import CaptureResponse
+
+class BriefingAttentionItem(BaseModel):
+    capture_id: str
+    source: str
+    priority: str | None
+    category: str | None
+    reason: str | None
+    preview: str
+    attention_score: float
 
 
 class BriefingResponse(BaseModel):
-    critical: list[CaptureResponse]
-    high: list[CaptureResponse]
-    top5: list[CaptureResponse]
-    inbox_count: int
+    emails_received_today: int
+    require_attention: int
+    critical_count: int
+    high_count: int
+    top_attention: list[BriefingAttentionItem]
     generated_at: datetime
