@@ -1,3 +1,4 @@
+import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -17,6 +18,8 @@ async def gmail_sync(body: GmailSyncRequest, db: Session = Depends(get_db)):
         normalized = await source.fetch()
     except ValueError as e:
         raise HTTPException(status_code=503, detail=str(e))
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=502, detail=f"Gmail API error: {e.response.status_code} — check credentials in Railway")
 
     created = 0
     for nc in normalized:
